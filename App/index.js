@@ -2,9 +2,62 @@
 // Combined code from all files
 
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Dimensions, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, Button, View, Dimensions, Alert } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-const { width } = Dimensions.get('window');
+const Stack = createStackNavigator();
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 30, // Add margin from the top to avoid status bar overlap
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    button: {
+        marginTop: 20,
+    },
+    gameContainer: {
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').width,
+        position: 'relative',
+        backgroundColor: '#000',
+    },
+    snakeSegment: {
+        position: 'absolute',
+        width: Dimensions.get('window').width / 20,
+        height: Dimensions.get('window').width / 20,
+        backgroundColor: 'limegreen',
+    },
+    food: {
+        position: 'absolute',
+        width: Dimensions.get('window').width / 20,
+        height: Dimensions.get('window').width / 20,
+        backgroundColor: 'red',
+    },
+});
+
+export function HomeScreen({ navigation }) {
+    return (
+        <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>Welcome to the Snake Game</Text>
+            <Button
+                title="Start Game"
+                onPress={() => navigation.navigate('SnakeGame')}
+                style={styles.button}
+            />
+        </SafeAreaView>
+    );
+}
+
+const { width, height } = Dimensions.get('window');
 const GRID_SIZE = 20;
 const CELL_SIZE = width / GRID_SIZE;
 
@@ -25,7 +78,7 @@ const initialState = () => ({
     gameOver: false
 });
 
-const SnakeGame = () => {
+export function SnakeGame({ navigation }) {
     const [state, setState] = useState(initialState());
 
     useEffect(() => {
@@ -117,66 +170,40 @@ const SnakeGame = () => {
     }, [state.direction]);
 
     return (
-        <View style={styles.gameContainer}>
-            {state.snake.map((segment, index) => (
+        <SafeAreaView style={styles.container}>
+            <Button
+                title="Back to Home"
+                onPress={() => navigation.navigate('Home')}
+                style={styles.button}
+            />
+            <View style={styles.gameContainer}>
+                {state.snake.map((segment, index) => (
+                    <View
+                        key={index}
+                        style={[
+                            styles.snakeSegment,
+                            { left: segment.x * CELL_SIZE, top: segment.y * CELL_SIZE }
+                        ]}
+                    />
+                ))}
                 <View
-                    key={index}
                     style={[
-                        styles.snakeSegment,
-                        { left: segment.x * CELL_SIZE, top: segment.y * CELL_SIZE }
+                        styles.food,
+                        { left: state.food.x * CELL_SIZE, top: state.food.y * CELL_SIZE }
                     ]}
                 />
-            ))}
-            <View
-                style={[
-                    styles.food,
-                    { left: state.food.x * CELL_SIZE, top: state.food.y * CELL_SIZE }
-                ]}
-            />
-        </View>
-    );
-};
-
-const App = () => {
-    return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>Snake Game</Text>
-            <SnakeGame />
+            </View>
         </SafeAreaView>
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 30,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    gameContainer: {
-        width: width,
-        height: width,
-        position: 'relative',
-        backgroundColor: '#000',
-    },
-    snakeSegment: {
-        position: 'absolute',
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        backgroundColor: 'limegreen',
-    },
-    food: {
-        position: 'absolute',
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        backgroundColor: 'red',
-    },
-});
-
-export default App;
+export default function App() {
+    return (
+        <NavigationContainer>
+            <Stack.Navigator initialRouteName="Home">
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="SnakeGame" component={SnakeGame} />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
